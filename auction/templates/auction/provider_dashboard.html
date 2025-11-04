@@ -1,0 +1,163 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% block content %}
+
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1 class="heading-title">Provider Dashboard</h1>
+            <p class="mb-0">
+              Welcome, {{ request.user.first_name }}!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'create_auction_item' %}">Create New Item</a></li>
+        </ol>
+      </div>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <!-- Starter Section Section -->
+  <section id="starter-section" class="starter-section section">
+
+    <!-- Section Title -->
+    <div class="container section-title" data-aos="fade-up">
+      <h2>My Items</h2>
+      <p>Manage your auction items and view offers from customers below.</p>
+    </div><!-- End Section Title -->
+    <div class="container" data-aos="fade-up">
+
+      {% for item in my_items %}
+      <section style="border:1px solid #ccc; padding:1rem; margin-bottom:1rem;">
+
+        <div class="container">
+          <div class="row">
+            <div class="col-8">
+              <!-- Item header -->
+              <h2>
+                {{ item.category.name }} /
+                {{ item.item_number }}
+                {% if item.title %} - {{ item.short_description }}{% endif %}
+              </h2>
+
+              <!-- Item stats -->
+              <p>
+                Qty:
+                {{ item.quantity }}
+                {% if item.unit_of_measure %}
+                {{ item.unit_of_measure }}
+                {% endif %}
+                |
+                Condition:
+                {{ item.get_condition_display }}
+              </p>
+
+              <p>
+                Start:
+                {{ item.start_datetime }}
+                |
+                Duration:
+                {{ item.duration_minutes }} min
+              </p>
+
+              <p>
+                Ends:
+                {{ item.end_datetime }}
+                |
+                Time left:
+                {{ item.time_remaining }}
+              </p>
+              {% if item.current_price %}
+              <p>Current price: ${{ item.current_price }}</p>
+              {% endif %}
+              <p>Starting price: ${{ item.starting_price }}</p>
+
+            {% with offers=offers_by_item.item.id %}
+              <!-- Offers list -->
+              <h3>Offers</h3>
+
+              {% for offer in item.offers.all|dictsortreversed:"created_at" %}
+              <div style="border:1px solid #999; margin-bottom:0.5rem; padding:0.5rem;">
+
+                <p>
+                  Offer:
+                  <strong>${{ offer.offer_price }}</strong>
+                  from
+                  <strong><b>{{ offer.customer.first_name }}</b>&nbsp;{{offer.customer.last_name}}</strong>
+                  at
+                  {{ offer.created_at }}
+                </p>
+                <p>
+                  Accepted?         
+                  {% if offer.accepted %}
+                  <strong>YES ✅</strong>
+                  {% else %}
+                  <span class="text-muted">Another offer has been accepted.</span>                  
+                  {% endif %}                 
+                </p>
+                {% if item.is_active  and not item.has_accepted_offer %}
+                <!-- Accept offer -->
+                {% if not offer.accepted %}
+                <form method="post" action="{% url 'accept_offer' item.pk offer.pk %}"
+                  style="display:inline-block; margin-right:0.5rem;">
+                  {% csrf_token %}
+                  <button class="btn btn-secondary" type="submit">Accept this offer</button>
+                </form>
+                {% endif %}
+                {% endif %}         
+              </div>
+              {% empty %}
+              <p>No offers yet.</p>
+              {% endfor %}     
+              <!-- Close auction-->
+              {% if item.is_active and not item.has_offers %}
+              <form method="post" action="{% url 'close_auction' item.id %}" style="display:inline-block;">
+                {% csrf_token %}
+                <button class="btn btn-danger" type="submit">Close this auction</button>
+              </form>
+              {% endif %}
+              {% endwith %}
+            </div>
+            <div class="col-4">
+              <!-- Item images -->
+              {# first image only #}
+              {% if item.images.all %}
+              {% with item.images.all.0 as first_image %}
+              <img class="card-img-top" src="{{ first_image.image.url }}" alt="{{ item.title }}"
+                style="height:200px; object-fit:cover;">
+              {% endwith %}
+              {% else %}
+              <div class="bg-light d-flex align-items-center justify-content-center"
+                style="height:200px; font-size:.9rem; color:#888;">
+                No image available
+              </div>
+              {% endif %}
+              <br>
+
+            </div>
+          </div>
+      </section>
+      {% empty %}
+      <p>You have no auction items yet.</p>
+      {% endfor %}
+    </div>
+
+  </section><!-- /Starter Section Section -->
+
+</main>
+
+
+
+
+{% endblock %}

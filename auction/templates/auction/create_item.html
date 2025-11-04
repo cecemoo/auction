@@ -1,0 +1,132 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Create Item</h1>
+                        <p class="mb-0">
+                            Create a new auction item by filling out the form below.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Create Item</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Create Item Section -->
+    <section id="create-item-section" class="create-item-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Create Item</h2>
+            <p>Fill out the form below to create a new auction item.</p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+            <h1 class="text-center">New Auction Item</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form | crispy }}
+
+                <h3>Images (max 10)</h3>
+                {{ image_formset.management_form }}
+                <div id="image-form-list">
+                    {% for form in image_formset.forms %}
+                    <div class="image-form-item mb-3">
+                        {{ form | crispy }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-none" id="empty-image-form">
+                    <div class="image-form-item mb-3">
+                        {{ image_formset.empty_form | crispy }}
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="button" id="add-image">Add another image</button>
+                <p class="text-muted mt-2">*You may upload up to 10 images. At least one image is required.</p>
+                <br>
+                <h3>Videos (max 2)</h3>
+               
+                {{ video_formset.management_form }}
+                <div id="video-form-list">
+                    {% for form in video_formset.forms %}
+                    <div class="video-form-item mb-3">
+                        {{ form | crispy }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-none" id="empty-video-form">
+                    <div class="video-form-item mb-3">
+                        {{ video_formset.empty_form | crispy }}
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="button" id="add-video">Add another video</button>
+                <p class="text-muted mt-2">*You may upload up to 5 videos. Each video can be either a file upload or a
+                    pasted link. Both fields are optional.</p>
+                
+                <br>
+                <button class="btn btn-primary" type="submit">Create</button>
+            </form>
+        </div>
+
+    </section><!-- /Create Item Section -->
+
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const addImageBtn = document.getElementById('add-image');
+        const imageFormList = document.getElementById('image-form-list');
+        const emptyImageForm = document.getElementById('empty-image-form').innerHTML;
+        const totalImageForms = document.getElementById('id_images-TOTAL_FORMS');
+
+        addImageBtn.addEventListener("click", function () {
+            let currentFormCount = parseInt(totalImageForms.value);
+            if (currentFormCount >= 10) {
+                alert("You can only upload up to 10 images.");
+                return;
+            }
+            let newFormHtml = emptyImageForm.replace(/__prefix__/g, currentFormCount);
+            imageFormList.insertAdjacentHTML('beforeend', newFormHtml);
+            totalImageForms.value = currentFormCount + 1;
+        });
+
+        // video formset
+        const addVideoBtn = document.getElementById('add-video');
+        const videoFormList = document.getElementById('video-form-list');
+        const emptyVideoForm = document.getElementById('empty-video-form').innerHTML;
+        const totalVideoForms = document.getElementById('id_videos-TOTAL_FORMS');
+
+        addVideoBtn.addEventListener("click", function () {
+            let currentFormCount = parseInt(totalVideoForms.value);
+            if (currentFormCount >= 5) {
+                alert("You can only upload up to 5 videos.");
+                return;
+            }
+            let newFormHtml = emptyVideoForm.replace(/__prefix__/g, currentFormCount);
+            videoFormList.insertAdjacentHTML('beforeend', newFormHtml);
+            totalVideoForms.value = currentFormCount + 1;
+        });
+    });
+</script>
+
+
+
+{% endblock %}

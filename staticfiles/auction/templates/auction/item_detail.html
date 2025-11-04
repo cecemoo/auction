@@ -1,0 +1,149 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Item Details</h1>
+                        <p class="mb-0">
+                            See the details of the auction item and make an offer if you're interested.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Item Details</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Item Details</h2>
+            <p>Please find the details of the auction item below.</p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+            <div class="container">
+                <h1>{{ item.short_description }}</h1>
+                <p>Auctioner: &nbsp;{{ item.provider.display_name }}</p>
+                <p>Category: {{ item.category.name }}</p>
+                <div class="row">
+                    <div class="col-6">
+                        <p>Condition: {{ item.get_condition_display }}</p>
+                        {% if item.unit_of_measure %}
+                        <p>UOM: {{ item.unit_of_measure }}</p>
+                        {% endif %}
+                        <p>Qty: {{ item.quantity }}</p>
+                        {% if item.price_per_unit_of_measure %}
+                        <p>Starting price per {{ item.unit_of_measure }}: ${{ item.price_per_unit_of_measure }}</p>
+                        {% endif %}
+                        {% if item.current_price %}
+                        <p>Current price: ${{ item.current_price }}</p>
+                        {% endif %}
+                        <p>Starting price: ${{ item.starting_price }}</p>
+                        <p>Starts: {{ item.start_datetime }}</p>
+                        <p>Ends: {{ item.end_datetime }}</p>
+                        <p>Time remaining: {{ item.time_remaining }}</p>
+                        <br>
+
+
+                        {% if request.user != item.provider.user %}
+                        {% if can_offer %}
+                        <h2>Make an Offer</h2>
+                        {% if user.is_authenticated %}
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ offer_form | crispy }}
+                            <button class="btn btn-primary" type="submit">Submit Offer</button>
+                        </form>
+                        {% else %}
+                        <p>Please <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to make an offer.</p>
+                        {% endif %}
+                        {% else %}
+                        <p>This auction is closed.</p>
+                        {% endif %}
+                        {% endif %}
+
+                        <br><br>
+                        <h2>Offers</h2>
+                        <ul>
+                            {% for offer in offers %}
+                            {% if offer.is_accepted %}
+                            <li><strong>${{ offer.offer_price }} by {{ offer.customer.first_name }} at {{
+                                    offer.created_at }}
+                                    (Accepted)</strong></li>
+                            {% else %}
+                            <li>${{ offer.offer_price }} by {{ offer.customer.first_name }} at {{ offer.created_at }}
+                            </li>
+                            {% endif %}
+                            {% empty %}
+                            <li>No offers yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <div>
+                            <h3>Images</h3>
+                            {% for img in item.images.all %}
+                            <img src="{{ img.image.url }}" style="max-width:200px;">
+                            {% endfor %}
+                        </div>
+                        <br>
+                        <div>
+
+
+                            {% if item.videos.all %}
+                            <h3>Videos</h3>
+                            <div class="row g-3">
+                                {% for vid in item.videos.all %}
+                                <div class="col-12 col-md-6">
+                                    {% if vid.video %}
+                                    <video src="{{ vid.video.url }}" controls
+                                        style="width:100%; height:300px; object-fit:cover;"></video><br>
+                                    {% elif vid.embed_url %}
+                                    <iframe src="{{ vid.embed_url }}" title="Video"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowfullscreen style="width:300px; height:300px; border:0;"></iframe><br>
+                                    {% else %}
+                                    <p class="text-muted">No video file or link available.</p>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p>No videos available</p>
+                            {% endif %}
+
+
+                        </div><br>
+                        <div>
+                            {% if item.description_document %}
+                            <h3>Item Details</h3>
+                            <p><a href="{{ item.description_document.url }}" target="_blank">View full
+                                    description</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+{% endblock %}

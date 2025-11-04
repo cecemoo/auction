@@ -1,0 +1,68 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+
+{% block content %}
+  <main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+      <div class="heading">
+        <div class="container">
+          <div class="row d-flex justify-content-center text-center">
+            <div class="col-lg-8">
+              <h1 class="heading-title">My Dashboard</h1>
+              <p class="mb-0">
+                Welcome, {{ request.user.first_name }}!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="breadcrumbs">
+        <div class="container">
+          <ol>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li class="current">My Dashboard</li>
+          </ol>
+        </div>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>My Purchases</h2>
+        <p>View your purchases below.</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up">
+        {% for r in results %}
+<section style="border:1px solid #ccc; padding:1rem; margin-bottom:1rem;">
+    <h2>{{ r.auction_item.category.name }} / {{ r.auction_item.item_number }}</h2>
+    <p>Description: {{ r.auction_item.short_description }}</p>
+    <p>Qty: {{ r.qty }} {{ r.unit_of_measure }}</p>
+    <p>Condition: {{ r.condition }}</p>
+
+    <p>Merchant price per {{ r.uom }}: ${{ r.merchant_price }}</p>
+    <p>Purchase total: ${{ r.sold_price_total }}</p>
+
+    <p>Sold by provider: {{ r.provider.display_name }}</p>
+    <p>Purchase date/time: {{ r.sold_datetime }}</p>
+
+    <p>Shipped & Delivered? {{ r.shipped_delivered }}</p>
+    <p>Received & Accepted? {{ r.received_accepted }}</p>
+</section>
+{% empty %}
+<p>You have not made any purchases yet.</p>
+<a href="{% url 'home' %}">Browse Auctions</a>
+{% endfor %}
+
+      </div>
+
+    </section><!-- /Starter Section Section -->
+
+  </main>
+
+{% endblock %}
