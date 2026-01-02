@@ -1,0 +1,207 @@
+{% extends "auction/base.html" %}
+{% load static %}
+
+
+
+
+{% block content %}
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Offer Review</h1>
+                        <p class="mb-0">
+                            Review the details of your offer before submitting it.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Offer Review</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Offer Review</h2>
+            <p>Review the details of your offer before submitting it.</p>
+        </div><!-- End Section Title -->
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <div>
+                <h2 class="mb-1">Offer Review</h2>
+                <p class="text-muted mb-0">Review and manage offers for this item.</p>
+            </div>
+
+            <div class="d-flex gap-2">
+                
+                <a href="{% url 'auction_item_detail' item.id %}" class="btn btn-outline-secondary">
+                    ← Back to Item
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                    Auction List
+                </a>
+            </div>
+        </div>
+
+        <!-- Item Info -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h4 class="mb-1">{{ item.title }}</h4>
+
+                {% if item.description %}
+                <p class="text-muted mb-2">{{ item.description|linebreaksbr }}</p>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-3 small text-muted">
+                    {% if item.created_at %}
+                    <span><strong>Posted:</strong> {{ item.created_at }}</span>
+                    {% endif %}
+                    {% if item.end_time %}
+                    <span><strong>Ends:</strong> {{ item.end_time }}</span>
+                    {% endif %}
+                    {% if item.starting_price %}
+                    <span><strong>Starting Price:</strong> {{ item.starting_price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Offers Table -->
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Offers</h5>
+                <span class="small text-muted">Item #{{ item.id }}</span>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Customer</th>
+                                <th>Offer Price</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for offer in offers %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+
+                                <td>
+                                    {% if offer.customer %}
+                                    {{ offer.customer }}
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td><strong>{{ offer.offer_price }}</strong></td>
+
+                                <td>
+                                    {% if offer.offer_quantity %}
+                                    {{ offer.offer_quantity }}
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if offer.offer_unit_price %}
+                                    {{ offer.offer_unit_price }}
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if offer.status == "accepted" %}
+                                    <span class="badge bg-success">Accepted</span>
+                                    {% elif offer.status == "rejected" %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                    {% elif offer.status == "pending" %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ offer.status|default:"Unknown" }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="small text-muted">
+                                    {% if offer.submitted_at %}
+                                    {{ offer.submitted_at }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+
+                                        {# Change url name if needed #}
+                                        <a href="{% url 'auction:offer_detail' offer.id %}"
+                                            class="btn btn-outline-primary">
+                                            View
+                                        </a>
+
+                                        <form action="{% url 'auction:offer_accept' offer.id %}" method="post"
+                                            class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-success" 
+                                            {% if offer.status == "accepted" %} disabled="disabled" {% endif %}>
+                                                Accept
+                                            </button>
+                                        </form>
+
+                                        <form action="{% url 'auction:offer_reject' offer.id %}" method="post"
+                                            class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger" 
+                                            {% if offer.status == "rejected" %} disabled="disabled" {% endif %}>
+                                                Reject
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No offers yet for this item.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+{% endblock %}

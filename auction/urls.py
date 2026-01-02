@@ -16,7 +16,10 @@ urlpatterns = [
     path("customer/dashboard/", views.customer_dashboard, name="customer_dashboard"),
 
     path('register/', views.register, name='register'),
-
+    path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('create_category/', views.create_category, name='create_category'),
+    path('delete_category/<int:category_id>/', views.delete_category, name='delete_category'),
+
+    path("offer/<int:offer_id>/review/", views.offer_review, name="offer_review"),
 ]
 

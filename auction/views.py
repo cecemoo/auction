@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.http import HttpResponseForbidden
 
-from .models import AuctionItem, AuctionImage, AuctionVideo, Offer, AuctionResult, Provider
+from .models import AuctionItem, AuctionImage, AuctionVideo, Offer, AuctionResult, Provider, Category
 from .forms import (
 AuctionItemForm,
 AuctionImageFormSet,
@@ -82,7 +82,8 @@ def create_auction_item(request):
         if form.is_valid():
             auction_item = form.save(commit=False)
             auction_item.provider = provider
-            auction_item.starting_price = form.cleaned_data["starting_price"] 
+            # auction_item._price = form.cleaned_data["total_price"] 
+            auction_item.unit_price = form.cleaned_data["unit_price"]
             auction_item.save()
 
             image_formset = AuctionImageFormSet(request.POST, request.FILES, instance=auction_item)
@@ -109,38 +110,86 @@ def create_auction_item(request):
 
 
 def auction_item_detail(request, pk):
-
     item = get_object_or_404(AuctionItem, pk=pk)
     offer_form = None
     can_offer = item.is_active and timezone.now() < item.end_datetime
+    offers_for_display = None
+
+    if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            offers_for_display = item.offers.exclude(status=Offer.STATUS_WITHDRAWN).order_by("-created_at")
+        elif request.user == item.provider.user:
+            offers_for_display = item.offers.exclude(status=Offer.STATUS_WITHDRAWN).order_by("-created_at")
+        else:
+            offers_for_display = None
+           
 
     if request.method == "POST":
         if not request.user.is_authenticated:
             return HttpResponseForbidden("Login required to make an offer.")
         if request.user == item.provider.user:
             return HttpResponseForbidden("You cannot make an offer on your own items.")
-
-        if can_offer:
-            offer_form = OfferForm(request.POST)
+        if not can_offer:
+            return HttpResponseForbidden("This auction is closed for offers.")
+        
+        offer_form = OfferForm(request.POST)
         if offer_form.is_valid():
             offer = offer_form.save(commit=False)
             offer.auction_item = item
             offer.customer = request.user
+            offer.status = Offer.STATUS_DRAFT
             offer.save()
-            # Provider will review offers in dashboard.
-            return redirect("auction_item_detail", pk=item.pk)
-        else:
-            offer_form = OfferForm()
+            return redirect("offer_review", offer_id=offer.id)
     else:
-        if can_offer:
-            offer_form = OfferForm()
-    offers = item.offers.all().order_by("-created_at")
+        offer_form = OfferForm() if can_offer else None
+
+
+    #     if can_offer:
+    #         offer_form = OfferForm(request.POST)
+    #     if offer_form.is_valid():
+    #         offer = offer_form.save(commit=False)
+    #         offer.auction_item = item
+    #         offer.customer = request.user
+    #         offer.save()
+            
+    #         return redirect("auction_item_detail", pk=item.pk)
+    #     else:
+    #         offer_form = OfferForm()
+    # else:
+    #     if can_offer:
+    #         offer_form = OfferForm()
+    # offers = item.offers.all().order_by("-created_at")
 
     return render(request, "auction/item_detail.html", {
     "item": item,
     "offer_form": offer_form,
     "can_offer": can_offer,
-    "offers": offers,
+    "offers": offers_for_display,
+    })
+
+@login_required
+def offer_review(request, offer_id):
+    offer = get_object_or_404(Offer, pk=offer_id)
+
+    if offer.customer != request.user:
+        return HttpResponseForbidden("You are not authorized to review this offer.")
+    
+    item = offer.auction_item
+    if not (item.is_active and timezone.now() < item.end_datetime):
+        return HttpResponseForbidden("This auction is closed.")
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "confirm":
+            offer.submit()
+            return redirect("auction_item_detail", pk=item.pk)
+        elif action == "cancel":
+            offer.status = Offer.STATUS_WITHDRAWN
+            offer.save(update_fields=['status'])
+            return redirect("auction_item_detail", pk=item.pk)
+    return render(request, "auction/offer_review.html", {
+    "offer": offer,
+    "item": item,
     })
 
 
@@ -150,9 +199,9 @@ def provider_dashboard(request):
     my_items = AuctionItem.objects.filter(provider=provider).order_by("-created_at")
     offers_by_item = {}
     for item in my_items:
-        offers = item.offers.order_by("-created_at")
+        offers = item.offers.filter(status=Offer.STATUS_WITHDRAWN).order_by("-created_at")
         offers_by_item[item.pk] = offers
-        item.has_accepted_offer = offers.filter(accepted=True).exists()
+        item.has_accepted_offer = item.offers.filter(accepted=True).exists()
         item.has_offers = offers.exists()
 
     return render(request, "auction/provider_dashboard.html", {
@@ -163,23 +212,56 @@ def provider_dashboard(request):
 
 @login_required
 def accept_offer(request, item_id, offer_id):
-    provider = get_object_or_404(Provider, user=request.user)
+    provider = get_object_or_404(Provider, user=request.user) 
     item = get_object_or_404(AuctionItem, pk=item_id, provider=provider)
     offer = get_object_or_404(Offer, pk=offer_id, auction_item=item)
-    if offer.auction_item.provider.user != request.user:
-        return HttpResponseForbidden("You are not authorized to accept this offer.")
-    if item.offers.filter(accepted=True).exists():
-        return HttpResponseForbidden("This auction already has an accepted offer.")
-
-    if request.method == "POST":
-        offer.accepted = True
-        offer.save()
-        item.starting_price = offer.offer_price
-        item.save()
-       
+    if request.method != "POST":
         return redirect("provider_dashboard")
+    if offer.accepted:
+        messages.info(request, "This offer has already been accepted.")
+        return redirect("provider_dashboard")
+    if offer.offer_quantity > item.quantity_available:
+        messages.error(request, "Not enough quantity available to accept this offer.")
+        return redirect("provider_dashboard")
+    offer.accepted = True
+    offer.save()
+    item.quantity_available -= offer.offer_quantity
+    item.save()
+    messages.success(request, "Offer accepted.")
 
-    return HttpResponseForbidden("POST required")
+
+    # offer = get_object_or_404(Offer, pk=offer_id, auction_item=item, status=Offer.STATUS_SUBMITTED)
+    # offer.accepted = True
+    # offer.status = Offer.STATUS_ACCEPTED
+    # offer.save(update_fields=['accepted', 'status', 'offer_price'])
+
+    # if request.method != "POST":
+    #     return HttpResponseForbidden("POST required")
+    # provider = get_object_or_404(Provider, user=request.user)
+    # item = get_object_or_404(AuctionItem, pk=item_id, provider=provider)
+    # offer = get_object_or_404(Offer, pk=offer_id, auction_item=item)
+    # if offer.auction_item.provider.user != request.user:
+    #     return HttpResponseForbidden("You are not authorized to accept this offer.")
+    
+    # remaining = item.quantity_available 
+    # if offer.offer_quantity > remaining:
+    #     return HttpResponseForbidden("Not enough quantity available to accept this offer.")
+    
+    # offer.accepted = True
+
+    # if offer.offer_unit_price is not None:
+    #     offer.offer_price = offer.offer_unit_price * offer.offer_quantity
+
+    # offer.save()
+
+    # item.quantity_available = remaining - offer.offer_quantity
+    # if item.quantity_available <= 0:
+    #     item.quantity_available = 0
+    #     item.is_closed = True
+    # item.save()
+
+    return redirect("provider_dashboard")
+
 
 
 @login_required
@@ -226,6 +308,14 @@ def register(request):
 
 
 @user_passes_test(lambda u: u.is_superuser)
+def admin_dashboard(request):
+    categories = Category.objects.all().order_by("name")
+    return render(request, "auction/admin_dashboard.html", {"categories": categories})
+
+
+
+
+@user_passes_test(lambda u: u.is_superuser)
 def create_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -237,3 +327,14 @@ def create_category(request):
 
     context = {"form": form}
     return render(request, "auction/create_category.html", context)
+
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, pk=category_id)
+    if request.method == "POST":
+        category.delete()
+        messages.success(request, "Category deleted successfully.")
+        return redirect("home")
+    return render(request, "auction/confirm_delete_category.html", {"category": category})

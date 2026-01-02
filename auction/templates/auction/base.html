@@ -12,8 +12,8 @@
   <meta name="keywords" content="">
 
   <!-- Favicons -->
-  <link href="{% static 'assets/img/favicon.png' %}" rel="icon">
-  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <!-- <link href="{% static 'assets/img/favicon.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon"> -->
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -44,24 +44,28 @@
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container position-relative d-flex align-items-center justify-content-between">
 
-      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+      <a href="{% url 'home' %}" class="logo d-flex align-items-center me-auto me-xl-0">
         <!-- Uncomment the line below if you also wish to use an image logo -->
         <!-- <img src="assets/img/logo.webp" alt=""> -->
-        <h1 class="sitename">TradeSocial Auction</h1>
+        <h1 class="sitename">TradeSocial ThirdSpace</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">
         <ul>
-          <li><a href="{% url 'home' %}" class="active">Auction Home</a></li>
           <li><a href="https://tradesocial.in">MarketPlace</a></li>
+          <li><a href="{% url 'home' %}" class="active">Auction Home</a></li>
+          <li><a href="{% url 'courses:course_list' %}">Courses</a></li>
+          
           
           
            {% if user.is_authenticated %}
             {% if user_is_provider %}
-          <li><a href="{% url 'provider_dashboard' %}">My Auctions</a></li>
+          <li><a href="{% url 'provider_dashboard' %}">My Dashboard</a></li>
             {% elif user.is_staff %}
-          <li><a href="{% url 'create_category' %}">Create Category</a></li>
+          <li><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+          
             {% else %}
+            
           <li><a href="{% url 'customer_dashboard' %}">My Purchases</a></li>
             {% endif %}
           <li><a href="{% url 'logout' %}">Logout</a></li>

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auction',
+    'courses',
     'crispy_forms',
     'crispy_bootstrap5',
    
@@ -145,7 +146,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = 'moosproxyservice@gmail.com'
+EMAIL_HOST_PASSWORD = 'rgzs jnbj mvms xrvk'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+STRIPE_SECRET_KEY = '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'
+STRIPE_PUBLISHABLE_KEY = 'pk_live_51PnKxM2LCVvj9bQ8cmeUagSMDaarTtyX4B6GeMBTY05vLzQtjtUJKHHFFX6h5fLmMBZGN8XhqrvLhBiZC13PQj9S00p9rpiew1'

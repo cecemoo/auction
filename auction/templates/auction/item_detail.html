@@ -10,9 +10,9 @@
             <div class="container">
                 <div class="row d-flex justify-content-center text-center">
                     <div class="col-lg-8">
-                        <h1 class="heading-title">Item Details</h1>
+                        <h1 class="heading-title">Auction Item Details</h1>
                         <p class="mb-0">
-                            See the details of the auction item and make an offer if you're interested.
+                            Detailed information about the auction item.
                         </p>
                     </div>
                 </div>
@@ -46,16 +46,15 @@
                     <div class="col-6">
                         <p>Condition: {{ item.get_condition_display }}</p>
                         {% if item.unit_of_measure %}
-                        <p>UOM: {{ item.unit_of_measure }}</p>
+                        <p>Unit of Measure: {{ item.unit_of_measure }}</p>
                         {% endif %}
-                        <p>Qty: {{ item.quantity }}</p>
-                        {% if item.price_per_unit_of_measure %}
-                        <p>Starting price per {{ item.unit_of_measure }}: ${{ item.price_per_unit_of_measure }}</p>
+                        <p>Buy unit price: ₹{{ item.unit_price }}</p>
+                        <p>Qty: {{ item.quantity_available }}</p>
+                        <p>Total price: ₹{{ item.total_price }}</p>
+                        {% if item.asking_price %}
+                        <p>Asking price: ₹{{ item.asking_price }}</p>
                         {% endif %}
-                        {% if item.current_price %}
-                        <p>Current price: ${{ item.current_price }}</p>
-                        {% endif %}
-                        <p>Starting price: ${{ item.starting_price }}</p>
+                        <p>Duration: {{ item.duration_days }} day{{ item.duration_days|pluralize }}</p>
                         <p>Starts: {{ item.start_datetime }}</p>
                         <p>Ends: {{ item.end_datetime }}</p>
                         <p>Time remaining: {{ item.time_remaining }}</p>
@@ -80,27 +79,30 @@
                         {% endif %}
 
                         <br><br>
+                        {% if user.is_authenticated and user.is_staff or user.is_superuser or user == item.provider.user %}
                         <h2>Offers</h2>
                         <ul>
                             {% for offer in offers %}
                             {% if offer.is_accepted %}
-                            <li><strong>${{ offer.offer_price }} by {{ offer.customer.first_name }} at {{
+                            <li><strong>₹{{ offer.offer_price }} was offered for {{ offer.offer_quantity }} at {{
                                     offer.created_at }}
                                     (Accepted)</strong></li>
                             {% else %}
-                            <li>${{ offer.offer_price }} by {{ offer.customer.first_name }} at {{ offer.created_at }}
+                            <li> 
+                                ₹{{ offer.offer_price }} was offered for {{ offer.offer_quantity }} at {{ offer.created_at }}
                             </li>
                             {% endif %}
                             {% empty %}
                             <li>No offers yet.</li>
                             {% endfor %}
                         </ul>
+                        {% endif %}
                     </div>
                     <div class="col-6">
                         <div>
                             <h3>Images</h3>
                             {% for img in item.images.all %}
-                            <img src="{{ img.image.url }}" style="max-width:200px;">
+                            <img src="{{ img.image.url }}" style="max-width:250px; height: 200px;">
                             {% endfor %}
                         </div>
                         <br>

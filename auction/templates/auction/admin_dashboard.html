@@ -1,0 +1,61 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% block content %}
+
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title">
+    <div class="heading">
+      <div class="container">
+        <div class="row d-flex justify-content-center text-center">
+          <div class="col-lg-8">
+            <h1 class="heading-title">Admin Dashboard</h1>
+            <p class="mb-0">
+              Welcome, {{ request.user.first_name }}!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="breadcrumbs">
+      <div class="container">
+        <ol>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'create_category' %}">Create New Category</a></li>
+        </ol>
+      </div>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <!-- Starter Section Section -->
+  <section id="starter-section" class="starter-section section">
+
+    <!-- Section Title -->
+    <div class="container section-title" data-aos="fade-up">
+      <h2>All Categories</h2>
+      <p>Manage auction categories below.</p>
+    </div><!-- End Section Title -->
+    <div class="container" data-aos="fade-up">
+      {% if categories %}
+      <ul class="list-group">
+        {% for category in categories %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ category.name }}</span>
+          <a class="btn btn-danger" href="{% url 'delete_category' category.id %}" class="btn btn-sm btn-outline-danger">
+            Delete
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No categories found.</p>
+      {% endif %}
+    </div>
+
+</main>
+
+
+
+
+{% endblock %}

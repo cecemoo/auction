@@ -1,0 +1,86 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">All Course</h1>
+                        <p class="mb-0">
+                            Browse and explore our wide range of courses designed to enhance your skills and knowledge.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">All Courses</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <!-- <div class="container section-title" data-aos="fade-up">
+            <h2>All Courses</h2>
+            <p>Browse and explore our wide range of courses designed to enhance your skills and knowledge.</p>
+        </div> -->
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="row gy-4">
+
+                {% for course in courses %}
+                <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+                    <div class="course-item">
+                        {% if course.image %}
+                        <img src="{{ course.image.url }}" class="img-fluid" alt="{{ course.title }}" style="width:500px; width:200px;"> 
+                        {% else %}
+                        <img src="{% static 'assets/img/default.png' %}" class="img-fluid" alt="Default Course Image" style="width:500px; width:200px;">
+                        {% endif %}
+                        <div class="course-content">
+                            <h3><a href="{% url 'courses:course_detail' course.id %}">{{ course.title }}</a></h3>
+                            <p>{{ course.description|truncatewords:20 }}</p>
+                            <div class="trainer d-flex justify-content-between align-items-center">
+                                <div class="trainer-profile d-flex align-items-center">
+                                    <span>Instructor: {{ course.teacher }}</span>
+                                </div>
+                                <div class="trainer-rank d-flex align-items-center">
+                                    <i class="bi bi-clock"></i>&nbsp; {{ course.duration_minutes }} hours
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No courses available at the moment. Please check back later.</p>
+                {% endfor %}
+
+            </div>
+        
+       
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+
+
+
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">My Courses</h1>
+                        <p class="mb-0">
+                            Welcome, {{ request.user.first_name }}!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">My Courses</li>
+                    <li><a href="{% url 'courses:course_create' %}">Create a Class</a></li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <!-- <div class="container section-title" data-aos="fade-up">
+            <h2>All Courses</h2>
+            <p>Browse and explore our wide range of courses designed to enhance your skills and knowledge.</p>
+        </div> -->
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="row gy-4">
+
+                {% if courses %}
+                <div class="row">
+                    {% for course in courses %}
+                    <div class="col-md-4">
+                        <div class="card mb-3 shadow">
+                            {% if course.image %}
+                            <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}" style="width:350px; height:200px;">
+                            {% else %}
+                            <img src="{% static 'assets/img/default.png' %}" class="card-img-top" alt="Default Course Image" style="width:350px; height:200px;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ course.title }}</h5>
+                                <p class="card-text">
+                                    Price: ${{ course.price }} <br>
+                                    Duration: {{ course.duration_minutes }} minutes
+                                </p>
+                                <a class="btn btn-primary" href="{% url 'courses:course_detail' course.pk %}">View Details</a>
+                                <a class="btn btn-secondary" href="{% url 'courses:timeslot_add' course.pk %}">Add Time Slot</a>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>You have no courses yet.</p>
+                <a href="{% url 'courses:course_create' %}">Create a new course</a>
+                {% endif %}
+            </div>
+        
+       
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+
+
+
+
+
+
+
+
+{% endblock %}

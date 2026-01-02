@@ -1,0 +1,68 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Course Creation</h1>
+                        <p class="mb-0">
+                            Hello, {{ request.user.first_name }}, fill in the details below to create a new course.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Create Course</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Create Course</h2>
+            <p>Fill in the course details below:</p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+            <form method="post" action="{% url 'courses:course_create' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <!-- <h3>Time Slots</h3>
+                {{ timeslot_formset.management_form }}
+                {% for tsform in timeslot_formset %}
+                    {{ tsform|crispy }}
+                {% endfor %}  -->
+                <button class="btn btn-primary" type="submit">Create Course</button>
+            </form>
+        </div>
+        
+       
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+
+
+
+
+
+
+
+
+{% endblock %}

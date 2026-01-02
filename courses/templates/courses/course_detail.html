@@ -1,0 +1,81 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Course Details</h1>
+                        <p class="mb-0">
+                            Detailed information about the course.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Course Details</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Course Details</h2>
+            <p>Please find the details of the course below.</p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="course-detail">
+                        <h3 class="course-title">{{ course.title }}</h3>
+                        {% if course.image %}
+                        <img src="{{ course.image.url }}" class="img-fluid" alt="{{ course.title }}" style="width: 750px; height:350px;">
+                        {% endif %}
+                        <p class="course-description">{{ course.description }}</p>
+                        <ul class="course-info">
+                            <li><strong>Instructor:</strong> {{ course.teacher.username }}</li>
+                            <li><strong>Duration:</strong> {{ course.duration_minutes }} minuts</li>
+                            <li><strong>Available Time Slots:</strong>
+                                {% if available_slots %}
+                                <ul>
+                                    <a href="{% url 'courses:weekly_schedule' course.pk %}">View Weekly Schedule and Book</a>
+                                </ul>
+                                {% else %}
+                                <ul>
+                                    {% if user == course.teacher  %}
+                                    <a href="{% url 'courses:timeslot_add' course.pk %}">Add another time slot</a>
+                                    {% endif %}
+                                        <li>No available time slots at the moment.</li>
+                                </ul>
+                                {% endif %}
+                               
+                            </li>
+                        </ul>
+                        {% if course.video_url %}
+                        <div class="course-video">
+                            <iframe width="100%" height="315" src="{{ course.video_url }}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+{% endblock %}

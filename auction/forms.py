@@ -14,21 +14,23 @@ class AuctionItemForm(forms.ModelForm):
         "category",
         "short_description",
         "description_document",
-        "quantity",
-        'starting_price',
+        "unit_of_measure",
+        'quantity_available',
+        'unit_price',
+        
         "condition",
         "start_datetime",
-        "duration_minutes",
+        "duration_days",
         ]
         widgets = {
         "start_datetime": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
 
-    def clean_unit_of_measure(self):
-        unit_of_measure = self.cleaned_data.get("unit_of_measure")
-        if not unit_of_measure:
-            return None
-        return unit_of_measure.strip()
+    # def clean_unit_of_measure(self):
+    #     unit_of_measure = self.cleaned_data.get("unit_of_measure")
+    #     if not unit_of_measure:
+    #         return None
+    #     return unit_of_measure.strip()
 
 
 class RequiredImageFormSet(BaseInlineFormSet):
@@ -95,12 +97,12 @@ AuctionVideoFormSet = inlineformset_factory(
 class OfferForm(forms.ModelForm):
     class Meta:
         model = Offer
-        fields = ["offer_price"]
+        fields = ["offer_unit_price", "offer_quantity"]
 
-    def clean_offer_price(self):
-        price = self.cleaned_data["offer_price"]
+    def clean_offer_unit_price(self):
+        price = self.cleaned_data["offer_unit_price"]
         if price <= 0:
-            raise ValidationError("Offer must be greater than 0.")
+            raise ValidationError("Offer unit price must be greater than 0.")
         return price
 
 

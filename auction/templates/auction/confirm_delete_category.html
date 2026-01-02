@@ -1,0 +1,64 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Category Deletion</h1>
+                        <p class="mb-0">
+                            Are you sure you want to delete the category "{{ category.name }}"?
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Confirm Deletion</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Confirm Deletion</h2>
+            
+            <p>This will also delete all auction items under this category.</p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+            <form method="post" action="{% url 'delete_category' category.id %}">
+                {% csrf_token %}
+                <button class="btn btn-danger" type="submit">Delete</button>
+            </form>
+        </div>
+        <div>
+            <p class="text-center mt-3 ">Don't want to delete? <a class="btn btn-warning" href="{% url 'admin_dashboard' %}">Cancel</a></p>
+        </div>
+
+    </section><!-- /Starter Section Section -->
+
+</main>
+
+
+
+
+
+
+
+
+{% endblock %}

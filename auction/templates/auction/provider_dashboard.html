@@ -22,7 +22,8 @@
       <div class="container">
         <ol>
           <li><a href="{% url 'home' %}">Home</a></li>
-          <li><a href="{% url 'create_auction_item' %}">Create New Item</a></li>
+          <li><a href="{% url 'create_auction_item' %}">Create New Auction Item</a></li>
+          <li><a href="{% url 'courses:my_courses' %}">View My Classes</a></li>
         </ol>
       </div>
     </nav>
@@ -54,21 +55,19 @@
               <!-- Item stats -->
               <p>
                 Qty:
-                {{ item.quantity }}
-                {% if item.unit_of_measure %}
-                {{ item.unit_of_measure }}
-                {% endif %}
-                |
+                {{ item.quantity_available }} |&nbsp;
                 Condition:
                 {{ item.get_condition_display }}
+              </p>
+              <p>
+                {% if item.unit_of_measure %}
+                UOM: {{ item.unit_of_measure }}
+                {% endif %}
               </p>
 
               <p>
                 Start:
                 {{ item.start_datetime }}
-                |
-                Duration:
-                {{ item.duration_minutes }} min
               </p>
 
               <p>
@@ -78,13 +77,16 @@
                 Time left:
                 {{ item.time_remaining }}
               </p>
-              {% if item.current_price %}
-              <p>Current price: ${{ item.current_price }}</p>
+              <p>Unit price: ₹{{ item.unit_price }}</p>
+              <p>Total Price: ₹{{ item.total_price }}</p>
+              {% if item.asking_price %}
+              <p>Asking price: ₹{{ item.asking_price }}</p>
               {% endif %}
-              <p>Starting price: ${{ item.starting_price }}</p>
+              <p>
+                <p>Quantity: {{ item.quantity_available }}</p>
 
-            {% with offers=offers_by_item.item.id %}
-              <!-- Offers list -->
+                {% with offers=offers_by_item.item.id %}
+                <!-- Offers list -->
               <h3>Offers</h3>
 
               {% for offer in item.offers.all|dictsortreversed:"created_at" %}
@@ -92,36 +94,35 @@
 
                 <p>
                   Offer:
-                  <strong>${{ offer.offer_price }}</strong>
+                  <strong>₹{{ offer.offer_price }}</strong>
                   from
                   <strong><b>{{ offer.customer.first_name }}</b>&nbsp;{{offer.customer.last_name}}</strong>
+                  for {{ offer.offer_quantity }}&nbsp;
                   at
                   {{ offer.created_at }}
                 </p>
                 <p>
-                  Accepted?         
-                  {% if offer.accepted %}
+                  Accepted?
+                 {% if offer.accepted %}
                   <strong>YES ✅</strong>
                   {% else %}
-                  <span class="text-muted">Another offer has been accepted.</span>                  
-                  {% endif %}                 
+                  <span class="text-muted">Pending</span>
+                  {% endif %}   
                 </p>
-                {% if item.is_active  and not item.has_accepted_offer %}
-                <!-- Accept offer -->
-                {% if not offer.accepted %}
-                <form method="post" action="{% url 'accept_offer' item.pk offer.pk %}"
+                {% if not offer.accepted and offer.offer_quantity <= item.quantity_available %}
+                <!-- Accept offer --> 
+                <form method="POST" action="{% url 'accept_offer' item.pk offer.pk %}"
                   style="display:inline-block; margin-right:0.5rem;">
                   {% csrf_token %}
                   <button class="btn btn-secondary" type="submit">Accept this offer</button>
-                </form>
+                </form>  
                 {% endif %}
-                {% endif %}         
               </div>
               {% empty %}
               <p>No offers yet.</p>
-              {% endfor %}     
+              {% endfor %}
               <!-- Close auction-->
-              {% if item.is_active and not item.has_offers %}
+              {% if item.is_active and not item.has_accepted_offer %}
               <form method="post" action="{% url 'close_auction' item.id %}" style="display:inline-block;">
                 {% csrf_token %}
                 <button class="btn btn-danger" type="submit">Close this auction</button>

@@ -1,0 +1,10 @@
+{% extends "auction/base.html" %}
+{% block content %}
+<h1>Payment Successful</h1>
+{% if booking %}
+<p>Thank you! Your booking for {{ booking.timeslot.course.title }} at
+    {{ booking.timeslot.start_time }} is confirmed.</p>
+{% else %}
+<p>Payment succeeded, but we couldn't find your booking. Please contact support.</p>
+{% endif %}
+{% endblock %}

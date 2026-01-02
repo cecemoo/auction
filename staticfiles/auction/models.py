@@ -66,8 +66,8 @@ class AuctionItem(models.Model):
     help_text="Optional PDF or Word doc with full presentation"
     )
 
-    quantity = models.IntegerField(
-    help_text="Quantity of items available in this auction"
+    quantity_available = models.PositiveIntegerField(
+    help_text=" of items available in this auction"
     )
     # unit_of_measure = models.CharField(
     # max_length=50,
@@ -127,8 +127,8 @@ class AuctionItem(models.Model):
     #     return f"{self.category.name}-{self.item_number}: {self.short_description}"
     
     def save(self, *args, **kwargs):
-        if self.quantity is not None and self.starting_price is not None:
-            self.starting_price = self.quantity * self.starting_price
+        if self.quantity_available is not None and self.starting_price is not None:
+            self.starting_price = self.quantity_available * self.starting_price
         super().save(*args, **kwargs)
 
     # TIME ENDS = start + duration
@@ -313,7 +313,7 @@ def create_result_when_offer_is_accepted(sender, instance, created, **kwargs):
         auction_item=item, 
         provider=item.provider,
         customer=instance.customer,
-        qty=item.quantity,
+        qty=item.quantity_available,
         
         condition=item.condition,
         merchant_price=item.starting_price,

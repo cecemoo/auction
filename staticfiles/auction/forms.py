@@ -14,7 +14,7 @@ class AuctionItemForm(forms.ModelForm):
         "category",
         "short_description",
         "description_document",
-        "quantity",
+        "quantity_available",
         'starting_price',
         "condition",
         "start_datetime",

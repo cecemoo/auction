@@ -1,0 +1,123 @@
+{% extends 'auction/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load tz %}
+{% block content %}
+<main class="main">
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="heading">
+            <div class="container">
+                <div class="row d-flex justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="heading-title">Weekly Schedule</h1>
+                        <p class="mb-0">
+                            Detailed information about the weekly schedule.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="breadcrumbs">
+            <div class="container">
+                <ol>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="current">Weekly Schedule</li>
+                </ol>
+            </div>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <!-- Starter Section Section -->
+    <section id="starter-section" class="starter-section section">
+
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Weekly Schedule for {{ course.title }}</h2>
+            <!-- <p>{{ week_start|date:"M j" }} – {{ week_end|date:"M j, Y" }}</p> -->
+            <p class="text-center">
+                <a href="?start={{ prev_start|date:'Y-m-d' }}">&laquo; Previous week</a>
+
+                <span class="mx-3">
+                    {{ week_start|date:"M d" }} – {{ week_end|date:"M d, Y" }}
+                </span>
+
+                <a href="?start={{ next_start|date:'Y-m-d' }}">Next week &raquo;</a>
+            </p>
+        </div><!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up">
+
+            <div class="container table-responsive">
+                <table class="table table-bordered table-sm text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Time</th>
+                            {% for day in days %}
+                            <th>
+                                {{ day|date:"D" }}<br>
+                                {{ day|date:"m/d" }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in hours %}
+                        <tr>
+                            <td>{{ row.hour|stringformat:"02d" }}:00</td>
+
+                            {% for cell in row.cells %}
+                            {% if cell.slot %}
+                            {% if cell.status == 'full' %}
+                            {# FULL – NOT CLICKABLE #}
+                            <td class="slot slot-full">
+                                {{ cell.slot.start_time|time:"H:i" }}<br>
+                                Full
+                            </td>
+                            {% else %}
+                            {# AVAILABLE – CLICKABLE BUTTON TO BOOK #}
+                            <td class="slot slot-available">
+                                <form method="post" action="{% url 'courses:add_to_cart' cell.slot.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary w-100">
+                                        Book<br>
+                                        <!-- {{ cell.slot.remaining_slots }} left -->
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                            {% else %}
+                            <td class="slot slot-empty"></td>
+                            {% endif %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'courses:course_detail' course.id %}">Course {{ course.title }}</a>
+        </div>
+</main>
+</section><!-- /Starter Section Section -->
+
+<style>
+    .slot-empty {
+        background-color: #f8f9fa;
+    }
+
+    .slot-available {
+        cursor: pointer;
+    }
+
+    .slot-full {
+        opacity: 0.3;
+        /* "muted" look */
+        background-color: #e9ecef;
+        pointer-events: none;
+        /* non-clickable */
+    }
+</style>
+
+</main>
+{% endblock %}
